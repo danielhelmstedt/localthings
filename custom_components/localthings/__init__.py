@@ -28,7 +28,7 @@ from .entity import LocalThingsEntity, _is_included, async_load_instance_names
 from .registry.capabilities import air_purifier
 from .registry.capabilities.cooktop import is_legacy_radiant_cooktop
 from .registry.by_type.microfiber_filter import WASHER_ONLY_ENTITIES
-from .registry.entities import BinarySensorDesc, SwitchDesc
+from .registry.entities import BinarySensorDesc
 from .registry.identity import resolve_serial
 from .rekey import rekey_entry
 from .services import async_setup_services
@@ -323,25 +323,17 @@ def _drop_duplicate_power_switches(
     if air_purifier.HREF_AIRFLOW not in coordinator.discovery_resources:
         return
     ent_reg = er.async_get(hass)
-    for bound in coordinator.bound:
-        if (
-            not isinstance(bound.desc, SwitchDesc)
-            or bound.desc.key != "power_switch"
-            or _is_included(bound, coordinator)
-        ):
-            continue
-        unique_id = LocalThingsEntity(coordinator, bound).unique_id
-        assert unique_id is not None
-        entity_id = ent_reg.async_get_entity_id("switch", DOMAIN, unique_id)
-        old = ent_reg.async_get(entity_id) if entity_id else None
-        if old is None or old.config_entry_id != entry.entry_id:
-            continue
-        _LOGGER.info(
-            "Removing %s, superseded by the airflow fan; update any "
-            "automation or dashboard that referenced it",
-            old.entity_id,
-        )
-        ent_reg.async_remove(old.entity_id)
+    unique_id = f"{DOMAIN}_{coordinator.device_key}_power_switch"
+    entity_id = ent_reg.async_get_entity_id("switch", DOMAIN, unique_id)
+    old = ent_reg.async_get(entity_id) if entity_id else None
+    if old is None or old.config_entry_id != entry.entry_id:
+        return
+    _LOGGER.info(
+        "Removing %s, superseded by the airflow fan; update any "
+        "automation or dashboard that referenced it",
+        old.entity_id,
+    )
+    ent_reg.async_remove(old.entity_id)
 
 
 @callback
