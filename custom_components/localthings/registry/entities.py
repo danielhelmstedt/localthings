@@ -56,6 +56,7 @@ class SamsungEntityDescription:
     enabled_default: bool = True
     value_fn: Callable[[Any], Any] = _identity
     rep_fn: Callable[[dict], Any] | None = None  # replaces field+value_fn; receives full rep
+    resources_value_fn: ResourceValueFn = None
     # (rep, resources): rep is this entity's own href's representation;
     # resources is the coordinator's full href->rep snapshot, for gating
     # presence on a sibling resource (e.g. laundry.cycle_options's source).
