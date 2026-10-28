@@ -28,6 +28,7 @@ ButtonPayloadFn = Callable[[datetime], Any] | None
 # platform supplies `now` so the registry stays free of HA's timezone
 # handling, the same split ButtonPayloadFn uses.
 TimePayloadFn = Callable[[dt_time, datetime], Any] | None
+ResourceValueFn = Callable[[Any, dict], Any] | None
 
 
 def _identity(v: Any) -> Any:

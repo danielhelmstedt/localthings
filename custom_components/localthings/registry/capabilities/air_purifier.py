@@ -127,6 +127,24 @@ _HEALTH_CONCERN_STATES = (
 )
 
 
+def _purifier_is_off_or_sleep(resources):
+    airflow = resources.get(HREF_AIRFLOW) or {}
+    if str(airflow.get("speed")) == "1":
+        return True
+
+    power = resources.get("/power/0") or {}
+    if power.get("value") is False:
+        return True
+
+    power = resources.get("/power/vs/0") or {}
+    return str(power.get("x.com.samsung.da.power")).lower() == "off"
+
+
+def _air_quality_value(items, resources, sensor_type):
+    value = sensor_item_value(items, sensor_type)
+    return None if value == 0 and _purifier_is_off_or_sleep(resources) else value
+
+
 def _grade_value(items, sensor_type, states, index=0):
     value = sensor_item_value(items, sensor_type, index)
     if value is None or value in (0, 10):
@@ -168,7 +186,12 @@ AIR_QUALITY = Capability(
                 # #166) -- that's a separate problem, and not one worth
                 # hiding a working reading over.
                 exists_fn=has_sensor_type(sensor_type),
-                value_fn=lambda items, t=sensor_type: sensor_item_value(items, t),
+                value_fn=lambda items, t=sensor_type: (
+                    None if (value := sensor_item_value(items, t)) == 0 else value
+                ),
+                resources_value_fn=lambda items, resources, t=sensor_type: (
+                    _air_quality_value(items, resources, t)
+                ),
             )
             for key, icon, sensor_type, state_class, device_class, unit in _AIR_QUALITY_SENSORS
         ),
