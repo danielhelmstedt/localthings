@@ -385,7 +385,13 @@ _AIRFLOW_SPEED_FIELD = "speed"
 # Raw `speed` codes, confirmed as Auto=0, Sleep=1, Low=2, Medium=3, High=4
 # (air_purifier.py's module docstring). Auto and Sleep aren't speeds, so
 # they are presets and only Low/Medium/High map to a percentage (#658).
-_AIRFLOW_PRESET_CODES = {"auto": "0", "sleep": "1"}
+_AIRFLOW_PRESET_CODES = {
+    "auto": "0",
+    "sleep": "1",
+    "low": "2",
+    "medium": "3",
+    "high": "4",
+}
 _AIRFLOW_SPEED_CODES = ["2", "3", "4"]
 
 

@@ -262,7 +262,10 @@
               "max": "Max",
               "mid": "Mid",
               "windfree": "WindFree",
-              "sleep": "Sleep"
+              "sleep": "Sleep",
+              "low": "Low",
+              "medium": "Medium",
+              "high": "High"
             }
           }
         }
