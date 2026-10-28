@@ -107,7 +107,6 @@ _AIR_QUALITY_SENSORS = (
     ("dust", "mdi:blur", "Dust", "measurement", "pm10", "μg/m³"),
     ("fine_dust", "mdi:blur", "FineDust", "measurement", "pm25", "μg/m³"),
     ("super_fine_dust", "mdi:blur", "SuperFineDust", "measurement", "pm1", "μg/m³"),
-    ("odor", "mdi:scent", "Odor", None, None, None),
 )
 
 # Samsung's dust health-concern capabilities enumerate `unknown`, `good`,
@@ -130,7 +129,7 @@ _HEALTH_CONCERN_STATES = (
 
 def _grade_value(items, sensor_type, states, index=0):
     value = sensor_item_value(items, sensor_type, index)
-    if value is None or value == 0:
+    if value is None or value in (0, 10):
         return None
     if 0 < value < len(states):
         return states[value]
@@ -172,6 +171,15 @@ AIR_QUALITY = Capability(
                 value_fn=lambda items, t=sensor_type: sensor_item_value(items, t),
             )
             for key, icon, sensor_type, state_class, device_class, unit in _AIR_QUALITY_SENSORS
+        ),
+        SensorDesc(
+            key="odor",
+            field="x.com.samsung.da.items",
+            icon="mdi:scent",
+            exists_fn=has_sensor_type("Odor"),
+            value_fn=lambda items: (
+                None if (value := sensor_item_value(items, "Odor")) == 0 else value
+            ),
         ),
         SensorDesc(
             key="clean_level",
