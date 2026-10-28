@@ -34,8 +34,33 @@ Reuses dishwasher.DIAGNOSIS for /diagnosis/vs/0 (identical field/write
 contract).
 """
 
+from dataclasses import replace
+
 from ..capabilities import air_purifier, airconditioner, common, dishwasher, ignored
+from ..entities import SwitchDesc
 from ._base import DeviceRegistry, _build
+
+
+def _power_switch_without_airflow(rep: dict, resources: dict) -> bool:
+    return common._power_switch_exists(rep, resources) and (
+        air_purifier.HREF_AIRFLOW not in resources
+    )
+
+
+def _air_purifier_power():
+    return tuple(
+        replace(
+            capability,
+            entities=tuple(
+                replace(entity, exists_fn=_power_switch_without_airflow)
+                if isinstance(entity, SwitchDesc) and entity.key == "power_switch"
+                else entity
+                for entity in capability.entities
+            ),
+        )
+        for capability in common.POWER
+    )
+
 
 REGISTRY = DeviceRegistry(
     name="air_purifier",
@@ -43,7 +68,7 @@ REGISTRY = DeviceRegistry(
         [
             *ignored.IGNORED,
             *common.UNIVERSAL,
-            *common.POWER,
+            *_air_purifier_power(),
             dishwasher.DIAGNOSIS,
             air_purifier.AIR_QUALITY,
             air_purifier.BOOSTER_FAN_MODE,
